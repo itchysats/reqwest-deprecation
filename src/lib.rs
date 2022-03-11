@@ -7,12 +7,13 @@ pub trait ResponseExt {
 
 #[derive(Debug)]
 pub struct Deprecation {
-    /// The timestamp specified in the `Deprecation` header. If not set, means we encountered `Deprecation: true`.
+    /// The timestamp specified in the `Deprecation` header. If not set, means we encountered
+    /// `Deprecation: true`.
     pub timestamp: Option<OffsetDateTime>,
     /// A link pointing to information about the deprecated resource.
     ///
     /// If present, we extracted it from a `Link` header with the relation `deprecation`.
-    pub deprecation_link: Option<String>
+    pub deprecation_link: Option<String>,
 }
 
 impl ResponseExt for Response {
@@ -29,15 +30,19 @@ impl ResponseExt for Response {
         if value == "true" {
             return Some(Deprecation {
                 timestamp: None,
-                deprecation_link
-            })
+                deprecation_link,
+            });
         }
 
-        let timestamp = OffsetDateTime::parse(value.to_str().ok()?, &time::format_description::well_known::Rfc2822).ok();
+        let timestamp = OffsetDateTime::parse(
+            value.to_str().ok()?,
+            &time::format_description::well_known::Rfc2822,
+        )
+        .ok();
 
         Some(Deprecation {
             timestamp,
-            deprecation_link
+            deprecation_link,
         })
     }
 }
@@ -54,7 +59,7 @@ fn parse_deprecation_link(input: &str) -> Option<&str> {
         let [key, value]: [&str; 2] = param.split('=').collect::<Vec<_>>().try_into().ok()?;
 
         if key == "rel" && value == r#""deprecation""# {
-            return Some(url)
+            return Some(url);
         }
     }
 }
@@ -66,7 +71,7 @@ mod tests {
     #[test]
     fn parse_deprecation_header() {
         let response: reqwest::Response = http::Response::builder()
-            .header("Deprecation","true")
+            .header("Deprecation", "true")
             .status(200)
             .body(String::new())
             .unwrap()
@@ -81,7 +86,7 @@ mod tests {
     #[test]
     fn parse_deprecation_header_with_date() {
         let response: reqwest::Response = http::Response::builder()
-            .header("Deprecation","Thu, 01 Jan 1970 00:00:00 +0000")
+            .header("Deprecation", "Thu, 01 Jan 1970 00:00:00 +0000")
             .status(200)
             .body(String::new())
             .unwrap()
@@ -96,7 +101,7 @@ mod tests {
     #[test]
     fn parse_deprecation_header_with_invalid_date() {
         let response: reqwest::Response = http::Response::builder()
-            .header("Deprecation","2021-01-01T10:00:13Z") // ISO8601 is not valid HTTP header date
+            .header("Deprecation", "2021-01-01T10:00:13Z") // ISO8601 is not valid HTTP header date
             .status(200)
             .body(String::new())
             .unwrap()
@@ -121,7 +126,10 @@ mod tests {
         let deprecation = response.deprecation().unwrap();
 
         assert_eq!(deprecation.timestamp, None);
-        assert_eq!(deprecation.deprecation_link, Some("https://developer.example.com/deprecation".to_owned()));
+        assert_eq!(
+            deprecation.deprecation_link,
+            Some("https://developer.example.com/deprecation".to_owned())
+        );
     }
 
     #[test]
@@ -138,12 +146,16 @@ mod tests {
         let deprecation = response.deprecation().unwrap();
 
         assert_eq!(deprecation.timestamp, None);
-        assert_eq!(deprecation.deprecation_link, Some("https://developer.example.com/deprecation".to_owned()));
+        assert_eq!(
+            deprecation.deprecation_link,
+            Some("https://developer.example.com/deprecation".to_owned())
+        );
     }
 
     #[test]
     fn parse_link_header() {
-        let link = r#"<https://developer.example.com/deprecation>; rel="deprecation"; type="text/html""#;
+        let link =
+            r#"<https://developer.example.com/deprecation>; rel="deprecation"; type="text/html""#;
 
         let link = parse_deprecation_link(link).unwrap();
 
@@ -152,7 +164,8 @@ mod tests {
 
     #[test]
     fn parse_link_header_different_order() {
-        let link = r#"<https://developer.example.com/deprecation>;  type="text/html"; rel="deprecation";"#;
+        let link =
+            r#"<https://developer.example.com/deprecation>;  type="text/html"; rel="deprecation";"#;
 
         let link = parse_deprecation_link(link).unwrap();
 
