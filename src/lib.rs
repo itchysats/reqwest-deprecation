@@ -47,7 +47,7 @@ impl ResponseExt for Response {
     }
 }
 
-const HEADER_NAME: &'static str = "Deprecation";
+const HEADER_NAME: &str = "Deprecation";
 
 fn parse_deprecation_link(input: &str) -> Option<&str> {
     let mut parts = input.split(';').map(|p| p.trim());
