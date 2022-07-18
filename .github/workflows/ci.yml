@@ -31,7 +31,7 @@ jobs:
           override: true
           profile: minimal
           components: clippy
-      - uses: Swatinem/rust-cache@v1.3.0
+      - uses: Swatinem/rust-cache@v2.0.0
       - run: cargo clippy --all-targets -- -D warnings
 
   lint-commits:
@@ -66,5 +66,5 @@ jobs:
           toolchain: ${{ matrix.rust }}
           override: true
           profile: minimal
-      - uses: Swatinem/rust-cache@v1.3.0
+      - uses: Swatinem/rust-cache@v2.0.0
       - run: cargo test --workspace
